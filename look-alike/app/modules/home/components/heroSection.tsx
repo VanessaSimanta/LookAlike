@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Button, Container, Divider, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Box, Button, Container, Divider, Group, Image, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 
 const catalog = [
   { label: 'Uniqlo' },
@@ -14,6 +14,13 @@ const navLinks = [
   { label: 'How It Works', href: '#' },
   { label: 'Recommender', href: '#' },
   { label: 'About Us', href: '#' },
+];
+
+const brandLogos = [
+  { label: 'Uniqlo', image: '/brand-logo/Uniqlo.png' },
+  { label: 'H&M', image: '/brand-logo/H&M.png' },
+  { label: 'Marks & Spencer', image: '/brand-logo/M&S.svg' },
+  { label: 'Zara', image: '/brand-logo/Zara.svg' },
 ];
 
 export function HeroSection() {
@@ -73,25 +80,6 @@ export function HeroSection() {
                   {link.label}
                 </Text>
               ))}
-
-              <Group gap={4} style={{ cursor: 'pointer' }}>
-                <Text component="span" fz="sm" c="brand.8">
-                  Recommender
-                </Text>
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-                  <path
-                    d="M1 1L5 5L9 1"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Group>
-
-              <Text component="a" href="#" fz="sm" c="brand.8" style={{ textDecoration: 'none' }}>
-                About Us
-              </Text>
             </Group>
           </Group>
         </Container>
@@ -109,18 +97,18 @@ export function HeroSection() {
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing={60} verticalSpacing={60}>
             <Stack gap={0}>
               <Title order={1} fz={46} fw={500} c="brand.8">
-                Upload Any Outfit.
+                Upload Any Outfit
               </Title>
-              <Title order={2} fz={46} fw={400} fs="italic" c="brand.3">
+              <Title order={2} fz={46} fw={400} fs="italic" c="brand.7">
                 To Find the Best Match
               </Title>
 
-              <Text mt={22} maw={440} c="brand.7" fz="sm" lh={1.65}>
+              <Text mt="lg" maw={440} c="brand.7" fz="lg">
                 A fashion recommendation system for Uniqlo, H&amp;M, Marks&amp;Spencer, and Zara in
                 Indonesia.
               </Text>
 
-              <Group gap={12} mt={32}>
+              <Group gap={12} mt="xl">
                 <Button size="md" radius="xl" color="brand.8">
                   Upload Image
                 </Button>
@@ -129,7 +117,7 @@ export function HeroSection() {
                   radius="xl"
                   variant="outline"
                   color="brand.8"
-                  styles={{ root: { borderColor: 'var(--mantine-color-brand-4)' } }}
+                  styles={{ root: { borderColor: 'var(--mantine-color-brand-8)' } }}
                 >
                   Learn How It Works
                 </Button>
@@ -137,19 +125,26 @@ export function HeroSection() {
 
               <Divider my={28} maw={520} color="brand.4" />
 
-              <Text fz={11} tt="uppercase" c="brand.3" mb={14} style={{ letterSpacing: '0.1em' }}>
+              <Text fz="sm" tt="uppercase" c="brand.3" mb="sm" style={{ letterSpacing: '0.1em' }}>
                 Supported Catalog
               </Text>
-              <Group gap={40}>
-                {catalog.map((item) => (
-                  <Stack key={item.label} gap={2}>
-                    <Text fz="xs" c="brand.3">
-                      Logo
-                    </Text>
-                    <Text fz="sm" fw={600} c="brand.8">
-                      {item.label}
-                    </Text>
-                  </Stack>
+              <Group gap={32} wrap="wrap">
+                {brandLogos.map((brand) => (
+                  <Box
+                    key={brand.label}
+                    h={32}
+                    w={96}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Image
+                      src={brand.image}
+                      alt={brand.label}
+                      h="100%"
+                      w="auto"
+                      maw="100%"
+                      fit="contain"
+                    />
+                  </Box>
                 ))}
               </Group>
             </Stack>
