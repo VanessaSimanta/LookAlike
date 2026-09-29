@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from pgvector.sqlalchemy import Vector
 
-from app.database import Base
+from app.dependencies.database import Base
 
 
 class ProductImage(Base):

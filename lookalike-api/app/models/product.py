@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Numeric, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 
-from app.database import Base
+from app.dependencies.database import Base
 
 
 class Product(Base):
@@ -24,4 +24,4 @@ class Product(Base):
 
     brand = relationship("Brand", back_populates="products")
     category = relationship("Category", back_populates="products")
-    images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
+    images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan", uselist=False)

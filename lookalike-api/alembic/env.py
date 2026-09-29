@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.database import Base, DATABASE_URL
+from app.dependencies.database import Base, DATABASE_URL
 from app import models  # noqa: F401  → wajib, supaya semua tabel terbaca
 
 
