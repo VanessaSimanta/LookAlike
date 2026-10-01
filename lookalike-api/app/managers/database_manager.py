@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, load_only
 from app.models.product import Product
 from app.models.product_image import ProductImage
 
@@ -47,4 +47,22 @@ class DatabaseManager:
             return self.db.scalars(query).one()
         except Exception as e:
             print("Error in get_product_detail_by_id manager:", e)
+            raise e
+
+    def get_all_feature_vectors(self) -> list[ProductImage]:
+        try:
+            query = (
+                select(ProductImage)
+                .options(
+                    load_only(
+                        ProductImage.product_id,
+                        ProductImage.feature_vector,
+                    )
+                )
+                .where(ProductImage.feature_vector.is_not(None))
+                .order_by(ProductImage.id)
+            )
+            return list(self.db.scalars(query).all())
+        except Exception as e:
+            print("Error in get_all_feature_vectors manager:", e)
             raise e
