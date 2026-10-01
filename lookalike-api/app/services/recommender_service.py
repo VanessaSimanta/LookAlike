@@ -1,3 +1,6 @@
+from sqlalchemy.exc import NoResultFound
+
+from app.errors.product_not_found import ProductNotFoundError
 from app.managers.database_manager import DatabaseManager
 from app.schemas.response.get_final_ranking_response import GetFinalRankingResponse
 
@@ -10,6 +13,12 @@ class Recommender:
         return self.database_manager.get_products_by_ids(product_ids)
 
     def get_product_detail(self, product_id: int) -> GetFinalRankingResponse:
-        return self.database_manager.get_product_detail_by_id(product_id)
+        try:
+            return self.database_manager.get_product_detail_by_id(product_id)
+        except NoResultFound:
+            raise ProductNotFoundError([product_id])
+
+    def find_similar_products():
+        ...
     
        
