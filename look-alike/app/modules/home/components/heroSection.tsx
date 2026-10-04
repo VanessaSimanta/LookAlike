@@ -1,19 +1,26 @@
 'use client';
 
-import { Box, Button, Container, Divider, Group, Image, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-
-const catalog = [
-  { label: 'Uniqlo' },
-  { label: 'Zara' },
-  { label: 'H&M' },
-  { label: 'Marks&Spencer' },
-];
+import {
+  Box,
+  Burger,
+  Button,
+  Container,
+  Divider,
+  Drawer,
+  Group,
+  Image,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 
 const navLinks = [
   { label: 'Home', href: '#' },
-  { label: 'How It Works', href: '#' },
-  { label: 'Recommender', href: '#' },
-  { label: 'About Us', href: '#' },
+  { label: 'How It Works', href: '#how-it-works' },
+  { label: 'Recommender', href: '#recommender' },
+  { label: 'About Us', href: '#about-us' },
 ];
 
 const brandLogos = [
@@ -24,9 +31,11 @@ const brandLogos = [
 ];
 
 export function HeroSection() {
+  const [menuOpened, { toggle: toggleMenu, close: closeMenu }] = useDisclosure(false);
+
   return (
     <Box bg="brand.1" mih="100vh">
-      <Box bg="brand.8" py={8}>
+      <Box bg="brand.8" py={8} px="md">
         <Text fz="xs" ta="center" c="brand.4">
           Multi-Brand Fashion Recommendation System:{' '}
           <Text component="span" fz="xs" fw={600} c="brand.0">
@@ -43,9 +52,9 @@ export function HeroSection() {
       </Box>
 
       <Box component="header" bg="brand.1" style={{ borderBottom: '1px solid var(--mantine-color-brand-4)' }}>
-        <Container size="xl" py={18}>
-          <Group justify="space-between">
-            <Group gap={10}>
+        <Container size="xl" py={{ base: 12, sm: 18 }}>
+          <Group justify="space-between" wrap="nowrap">
+            <Group gap={10} wrap="nowrap">
               <Box
                 bg="brand.8"
                 c="brand.0"
@@ -53,7 +62,7 @@ export function HeroSection() {
                 h={38}
                 fz="lg"
                 fw={600}
-                style={{ borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
               >
                 LA
               </Box>
@@ -61,13 +70,13 @@ export function HeroSection() {
                 <Text fz={19} fw={600} c="brand.8">
                   LookAlike
                 </Text>
-                <Text fz={10} tt="uppercase" c="brand.3" style={{ letterSpacing: '0.08em' }}>
+                <Text fz={10} tt="uppercase" c="brand.3" visibleFrom="xs" style={{ letterSpacing: '0.08em' }}>
                   Your Personal Fashion Assistant
                 </Text>
               </Stack>
             </Group>
 
-            <Group gap={36} visibleFrom="sm">
+            <Group gap={36} visibleFrom="md">
               {navLinks.map((link) => (
                 <Text
                   key={link.label}
@@ -81,38 +90,82 @@ export function HeroSection() {
                 </Text>
               ))}
             </Group>
+
+            <Burger
+              opened={menuOpened}
+              onClick={toggleMenu}
+              hiddenFrom="md"
+              size="sm"
+              color="var(--mantine-color-brand-8)"
+              aria-label="Toggle navigation"
+            />
           </Group>
         </Container>
       </Box>
 
+      <Drawer
+        opened={menuOpened}
+        onClose={closeMenu}
+        position="right"
+        size="75%"
+        hiddenFrom="md"
+        title={
+          <Text fz={19} fw={600} c="brand.8">
+            LookAlike
+          </Text>
+        }
+        styles={{
+          content: { backgroundColor: 'var(--mantine-color-brand-1)' },
+          header: { backgroundColor: 'var(--mantine-color-brand-1)' },
+        }}
+      >
+        <Stack gap="lg" mt="md">
+          {navLinks.map((link) => (
+            <Text
+              key={link.label}
+              component="a"
+              href={link.href}
+              fz="lg"
+              c="brand.8"
+              onClick={closeMenu}
+              style={{ textDecoration: 'none' }}
+            >
+              {link.label}
+            </Text>
+          ))}
+        </Stack>
+      </Drawer>
+
       {/* Hero */}
       <Box
-        py={90}
+        py={{ base: 48, sm: 64, md: 90 }}
         style={{
           backgroundImage: 'radial-gradient(var(--mantine-color-brand-4) 1.2px, transparent 1.2px)',
           backgroundSize: '22px 22px',
         }}
       >
         <Container size="xl">
-          <SimpleGrid cols={{ base: 1, md: 2 }} spacing={60} verticalSpacing={60}>
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 40, md: 60 }} verticalSpacing={{ base: 40, md: 60 }}>
             <Stack gap={0}>
-              <Title order={1} fz={46} fw={500} c="brand.8">
+              <Title order={1} fz={{ base: 32, sm: 40, md: 46 }} fw={500} c="brand.8">
                 Upload Any Outfit
               </Title>
-              <Title order={2} fz={46} fw={400} fs="italic" c="brand.7">
+              <Title order={2} fz={{ base: 32, sm: 40, md: 46 }} fw={400} fs="italic" c="brand.7">
                 To Find the Best Match
               </Title>
 
-              <Text mt="lg" maw={440} c="brand.7" fz="lg">
+              <Text mt="lg" maw={440} c="brand.7" fz={{ base: 'md', sm: 'lg' }}>
                 A fashion recommendation system for Uniqlo, H&amp;M, Marks&amp;Spencer, and Zara in
                 Indonesia.
               </Text>
 
               <Group gap={12} mt="xl">
-                <Button size="md" radius="xl" color="brand.8">
+                <Button component="a" href="#recommender" size="md" radius="xl" color="brand.8">
                   Upload Image
                 </Button>
                 <Button
+                  component="a"
+                  href="#how-it-works"
                   size="md"
                   radius="xl"
                   variant="outline"
@@ -128,12 +181,11 @@ export function HeroSection() {
               <Text fz="sm" tt="uppercase" c="brand.3" mb="sm" style={{ letterSpacing: '0.1em' }}>
                 Supported Catalog
               </Text>
-              <Group gap={32} wrap="wrap">
+              <SimpleGrid cols={4} spacing={{ base: 'md', sm: 32 }} maw={480}>
                 {brandLogos.map((brand) => (
                   <Box
                     key={brand.label}
                     h={32}
-                    w={96}
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     <Image
@@ -146,10 +198,15 @@ export function HeroSection() {
                     />
                   </Box>
                 ))}
-              </Group>
+              </SimpleGrid>
             </Stack>
 
-            <Box bg="brand.6" style={{ aspectRatio: '1 / 1', borderRadius: 28 }} />
+            <Box
+              bg="brand.6"
+              w="100%"
+              h={{ base: 300, sm: 420, md: 'auto' }}
+              style={{ aspectRatio: '1 / 1', borderRadius: 28 }}
+            />
           </SimpleGrid>
         </Container>
       </Box>

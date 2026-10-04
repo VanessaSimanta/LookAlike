@@ -4,6 +4,8 @@ from app.views.get_product_detail_view import router as get_product_detail_route
 from app.views.get_similar_products_view import router as get_similar_products_router
 from contextlib import asynccontextmanager
 from app.dependencies.master import get_feature_extractor, get_feature_index
+from app.middlewares.error_middleware import register_error_handlers
+from app.middlewares.cors_middleware import register_cors
 
 
 @asynccontextmanager
@@ -13,6 +15,9 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="LookAlike API", lifespan=lifespan)
+
+register_cors(app)
+register_error_handlers(app)
 
 app.include_router(get_final_ranking_router)
 app.include_router(get_product_detail_router)

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 import "./globals.css";
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import { theme } from "../theme";
 
 const geistSans = Geist({
@@ -31,7 +33,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ColorSchemeScript />
       </head>
       <body className="min-h-full flex flex-col">
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <MantineProvider theme={theme}>
+          <Notifications position="top-right" />
+          {children}
+        </MantineProvider>
       </body>
     </html>
   );
