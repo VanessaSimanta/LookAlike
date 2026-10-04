@@ -5,13 +5,20 @@ from app.dependencies.master import get_recommender
 from app.schemas.request.get_similar_products_request import (
     GetSimilarProductsRequestSchema,
 )
+from app.schemas.response.get_similar_products_response import (
+    SimilarProductResponse,
+)
 from app.services.recommender_service import Recommender
 from app.mappers.get_similar_products_mapper import get_similar_products_mapper
 
 
 router = APIRouter(tags=["Products"])
 
-@router.post("/similar-products")
+
+@router.post(
+    "/similar-products",
+    response_model=list[SimilarProductResponse],
+)
 def get_similar_products_view(
     image_file: Annotated[UploadFile, File()],
     form: Annotated[
@@ -29,6 +36,8 @@ def get_similar_products_view(
     )
 
     return [
-        get_similar_products_mapper(product, similarity_score)
-        for product, similarity_score in result
+        get_similar_products_mapper(
+            row["product"], row["similarity"], row["saw_score"]
+        )
+        for row in result
     ]

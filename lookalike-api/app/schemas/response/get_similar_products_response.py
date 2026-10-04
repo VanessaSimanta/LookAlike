@@ -8,6 +8,9 @@ class SimilarProductResponse(BaseModel):
     name: str
     brand_name: Optional[str] = None
     category_name: Optional[str] = None
-    base_price: int
+    base_price: float
+    promo_price: Optional[float] = None
     image_url: Optional[str] = None
+    material: Optional[str] = None
     similarity_score: float
+    saw_score: Optional[float] = None
