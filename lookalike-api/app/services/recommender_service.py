@@ -50,6 +50,9 @@ class Recommender:
         except NoResultFound:
             raise ProductNotFoundError([product_id])
 
+    def get_random_sample(self, limit: int):
+        return self.database_manager.get_random_products(limit)
+
     def _calculate_cosine_similarity(
         self, query_vector: np.ndarray, k: int
     ) -> list[tuple[int, float]]:

@@ -18,7 +18,7 @@ import {
 import { ProductDetailModal } from './productDetailModal';
 
 export type Product = {
-  id: string;
+  product_id: number;
   brand: string;
   name: string;
   category: string;
@@ -37,17 +37,10 @@ type ResultsSectionProps = {
   products?: Product[];
 };
 
-const sampleProducts: Product[] = [
-  { id: '1', brand: 'Zara', name: 'Stretch Bodysuit With Square Neckline', category: 'Shirt', price: 100000, similarity: 98, material: 'Cotton', sizes: ['S', 'M', 'L'], color: 'White', rating: 4, reviewCount: 18 },
-  { id: '2', brand: 'Uniqlo', name: 'Celana Pendek Rileks Linen Blend', category: 'Shirt', price: 300000, similarity: 95, material: 'Linen', sizes: ['S', 'M', 'L', 'XL'], color: 'White', rating: 4, reviewCount: 18 },
-  { id: '3', brand: 'Marks & Spencer', name: 'Pure Cotton Striped Scoop Neck T-Shirt', category: 'Sweaters', price: 500000, similarity: 90, material: 'Cotton', sizes: ['S', 'M', 'L'], color: 'Navy', rating: 5, reviewCount: 32 },
-  { id: '4', brand: 'Marks & Spencer', name: 'Pure Cotton Striped Scoop Neck T-Shirt', category: 'Sweaters', price: 500000, similarity: 92, material: 'Cotton', sizes: ['M', 'L'], color: 'Black', rating: 4, reviewCount: 12 },
-  { id: '5', brand: 'Uniqlo', name: 'Celana Pendek Rileks Linen Blend', category: 'Shirt', price: 300000, similarity: 90, material: 'Linen', sizes: ['S', 'M', 'L'], color: 'Beige', rating: 4, reviewCount: 9 },
-];
 
 export const formatRupiah = (value: number) => `Rp. ${value.toLocaleString('id-ID')}`;
 
-export function ResultsSection({ products = sampleProducts }: ResultsSectionProps) {
+export function ResultsSection({ products }: ResultsSectionProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
 
@@ -74,8 +67,8 @@ export function ResultsSection({ products = sampleProducts }: ResultsSectionProp
         </Group>
 
         <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing="sm" verticalSpacing="md">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} onClick={() => setSelectedProduct(product)} />
+          {products?.map((product) => (
+            <ProductCard key={product.product_id} product={product} onClick={() => setSelectedProduct(product)} />
           ))}
         </SimpleGrid>
       </Container>
@@ -99,7 +92,7 @@ function ProductCard({ product, onClick }: ProductCardProps) {
     <Card
       padding="xs"
       radius="md"
-      bg="brand.0"
+      bg="brand.1"
       bd="1px solid brand.4"
       shadow="sm"
       onClick={onClick}

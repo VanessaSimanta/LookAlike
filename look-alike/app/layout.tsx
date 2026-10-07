@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       {...mantineHtmlProps}
     >
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="light" />
       </head>
       <body className="min-h-full flex flex-col">
         <MantineProvider theme={theme}>

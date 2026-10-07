@@ -1,28 +1,29 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload, load_only
 from app.models.product import Product
+from app.models.category import Category
 from app.models.product_image import ProductImage
 
 
 class DatabaseManager:
     def __init__(self, db: Session):
-        self.db = db  
+        self.db = db
 
     def get_products_by_ids(self, ids: list[int]) -> list[Product]:
         try:
             if not ids:
-               return []
-      
+                return []
+
             query = (
-                  select(Product)
-                  .options(
-                     joinedload(Product.brand),
-                     joinedload(Product.category),
-                     joinedload(Product.images).load_only(
+                select(Product)
+                .options(
+                    joinedload(Product.brand),
+                    joinedload(Product.category),
+                    joinedload(Product.images).load_only(
                         ProductImage.url,
-                     ),
-                  )
-                  .where(Product.id.in_(ids))
+                    ),
+                )
+                .where(Product.id.in_(ids))
             )
 
             return list(self.db.scalars(query).unique().all())
@@ -33,20 +34,50 @@ class DatabaseManager:
     def get_product_detail_by_id(self, id: int) -> Product:
         try:
             query = (
-                  select(Product)
-                  .options(
-                     joinedload(Product.brand),
-                     joinedload(Product.category),
-                     joinedload(Product.images).load_only(
+                select(Product)
+                .options(
+                    joinedload(Product.brand),
+                    joinedload(Product.category),
+                    joinedload(Product.images).load_only(
                         ProductImage.url,
-                     ),
-                  )
-                  .where(Product.id == id)
+                    ),
+                )
+                .where(Product.id == id)
             )
 
             return self.db.scalars(query).one()
         except Exception as e:
             print("Error in get_product_detail_by_id manager:", e)
+            raise e
+
+    def get_random_products(self, limit: int) -> list[Product]:
+        try:
+            query = (
+                select(Product)
+                .options(
+                    joinedload(Product.category),
+                    joinedload(Product.images).load_only(
+                        ProductImage.url,
+                    ),
+                )
+                .where(
+                    ~Product.category.has(
+                        Category.name.in_(
+                            [
+                                "Underwear",
+                                "Lingerie",
+                                "Other",
+                            ]
+                        )
+                    )
+                )
+                .order_by(func.random())
+                .limit(limit)
+            )
+
+            return list(self.db.scalars(query).unique().all())
+        except Exception as e:
+            print("Error in get_random_products manager:", e)
             raise e
 
     def get_all_feature_vectors(self) -> list[ProductImage]:

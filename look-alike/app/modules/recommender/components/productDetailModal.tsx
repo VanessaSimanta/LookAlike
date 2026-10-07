@@ -10,6 +10,7 @@ import {
   Grid,
   Group,
   Image,
+  Loader,
   Modal,
   Rating,
   Stack,
@@ -17,6 +18,8 @@ import {
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { formatRupiah, type Product } from './resultsSection';
+import { useGetProductDetail } from '../hooks/use-get-product-detail';
+import { getMaterialLabel } from '../../enums/materialEnum';
 
 type ProductDetailModalProps = {
   product: Product | null;
@@ -24,16 +27,12 @@ type ProductDetailModalProps = {
   onClose: () => void;
 };
 
-export function ProductDetailModal({ product, opened, onClose }: ProductDetailModalProps) {
-  const details = product
-    ? [
-        { label: 'Category', value: product.category },
-        { label: 'Materials', value: product.material ?? '-' },
-        { label: 'Size', value: product.sizes?.join(', ') ?? '-' },
-        { label: 'Color', value: product.color ?? '-' },
-      ]
-    : [];
+const joinList = (items?: string[] | null) =>
+  items && items.length > 0 ? items.join(', ') : '-';
 
+export function ProductDetailModal({ product, opened, onClose }: ProductDetailModalProps) {
+  const productId = Number(product?.product_id);
+  const { data, isLoading } = useGetProductDetail(opened ? productId : null);
   const isMobile = useMediaQuery('(max-width: 36em)');
 
   return (
@@ -90,18 +89,29 @@ export function ProductDetailModal({ product, opened, onClose }: ProductDetailMo
 
                 <Divider my="sm" color="brand.4" />
 
-                <Stack gap="xs">
-                  {details.map((detail) => (
-                    <Group key={detail.label} gap="md" wrap="nowrap">
-                      <Text fz="xs" fw={600} c="brand.8" w="35%">
-                        {detail.label}
-                      </Text>
-                      <Text fz="xs" c="brand.7">
-                        {detail.value}
-                      </Text>
-                    </Group>
-                  ))}
-                </Stack>
+                {isLoading ? (
+                  <Loader size="sm" color="brand.8" />
+                ) : (
+                  data && (
+                    <Stack gap="xs">
+                      {[
+                        { label: 'Category', value: data.category_name || '-' },
+                        { label: 'Material', value: getMaterialLabel(data.material) || data.material || '-' },
+                        { label: 'Sizes', value: joinList(data.sizes) },
+                        { label: 'Colors', value: joinList(data.colors) },
+                      ].map((detail) => (
+                        <Group key={detail.label} gap="md" wrap="nowrap">
+                          <Text fz="xs" fw={600} c="brand.8" w="35%">
+                            {detail.label}
+                          </Text>
+                          <Text fz="xs" c="brand.7">
+                            {detail.value}
+                          </Text>
+                        </Group>
+                      ))}
+                    </Stack>
+                  )
+                )}
 
                 <Button
                   component="a"

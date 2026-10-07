@@ -1,11 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import { BACKEND_URL } from '@/shared/api';
 import { TRecommenderRequest } from '../data/request';
-import { TRecommenderResponse } from '../data/response';
-import { GetRecommendationError } from '../error';
+import { TProductDetailResponse, TRandomSampleResponse, TRecommenderResponse } from '../data/response';
+import { GetProductDetailError, GetRandomSampleError, GetRecommendationError } from '../error';
 
 export const RecommenderService = {
-    getRecommender: async (body: TRecommenderRequest) => {
+    getRecommender: async(body: TRecommenderRequest) => {
         try {
             const formData = new FormData();
             formData.append('image_file', body.image_file);
@@ -20,7 +20,36 @@ export const RecommenderService = {
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {
+                console.log("error in getRecommender: ", error);
                 throw new GetRecommendationError();
+            }
+            throw error;
+        }
+    },
+    getProductDetail: async(product_id: number) => {
+        try {
+            const response: AxiosResponse<TProductDetailResponse> =
+                await BACKEND_URL.get('/product-detail', { params: { product_id } });
+
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log("error in getProductDetail: ", error);
+                throw new GetProductDetailError();
+            }
+            throw error;
+        }
+    },
+    getRandomSample: async(limit: number) => {
+        try {
+            const response: AxiosResponse<TRandomSampleResponse> =
+                await BACKEND_URL.get('/random-sample', { params: { limit } });
+
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log("error in getRandomSample: ", error);
+                throw new GetRandomSampleError();
             }
             throw error;
         }
