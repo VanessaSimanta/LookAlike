@@ -1,6 +1,6 @@
 'use client';
 
-import { type DragEvent, useEffect, useState } from 'react';
+import { type DragEvent, useEffect, useRef, useState } from 'react';
 import {
   AspectRatio,
   Box,
@@ -13,8 +13,8 @@ import {
   Grid,
   Group,
   Image,
+  MultiSelect,
   NumberInput,
-  Select,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -26,12 +26,13 @@ import {
 import { IconPhoto, IconUpload } from '@tabler/icons-react';
 import { useGetRandomSample } from '../hooks/use-get-random-sample';
 import { materialOptions } from '../../enums/materialEnum';
+import { ImageCropModal } from './imageCropModal';
 
 export type RecommendationFilters = {
   minPrice: number | null;
   maxPrice: number | null;
   pricePriority: boolean;
-  material: string | null;
+  materials: string[];
   materialPriority: boolean;
 };
 
@@ -49,13 +50,16 @@ const initialFilters: RecommendationFilters = {
   minPrice: null,
   maxPrice: null,
   pricePriority: false,
-  material: null,
+  materials: [],
   materialPriority: false,
 };
 
 export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageSectionProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const [cropSource, setCropSource] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const fileResetRef = useRef<() => void>(null);
   const [filters, setFilters] = useState<RecommendationFilters>(initialFilters);
   const [isDragging, setIsDragging] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
@@ -68,9 +72,17 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
   }, [preview]);
 
   const handleFileChange = (selected: File | null) => {
+    fileResetRef.current?.();
+    if (!selected) return;
     setDropError(null);
-    setFile(selected);
-    setPreview(selected ? URL.createObjectURL(selected) : null);
+    setCropSource(selected);
+  };
+
+  const handleCropConfirm = (cropped: File) => {
+    setOriginalFile(cropSource);
+    setFile(cropped);
+    setPreview(URL.createObjectURL(cropped));
+    setCropSource(null);
   };
 
   const handleDragOver = (event: DragEvent<HTMLElement>) => {
@@ -102,19 +114,23 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
   const handleResetImage = () => {
     setDropError(null);
     setFile(null);
+    setOriginalFile(null);
     setPreview(null);
   };
 
   const handleSelectSample = async (imageUrl: string) => {
     setDropError(null);
     setFile(null);
+    setOriginalFile(null);
     setPreview(imageUrl);
 
     try {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const fileName = imageUrl.split('/').pop()?.split('?')[0] || 'sample.jpg';
-      setFile(new File([blob], fileName, { type: blob.type || 'image/jpeg' }));
+      const sampleFile = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+      setFile(sampleFile);
+      setOriginalFile(sampleFile);
     } catch {
       setDropError('Failed to load sample image. Please try another one.');
     }
@@ -145,15 +161,30 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                   1. Outfit Image Input
                 </Text>
                 {preview && (
-                  <UnstyledButton onClick={handleResetImage}>
-                    <Text fz="xs" c="brand.5" td="underline">
-                      Reset Image
-                    </Text>
-                  </UnstyledButton>
+                  <Group gap="sm">
+                    {originalFile && (
+                      <UnstyledButton onClick={() => setCropSource(originalFile)}>
+                        <Text fz="xs" c="brand.5" td="underline">
+                          Crop Image
+                        </Text>
+                      </UnstyledButton>
+                    )}
+                    <UnstyledButton onClick={handleResetImage}>
+                      <Text fz="xs" c="brand.5" td="underline">
+                        Reset Image
+                      </Text>
+                    </UnstyledButton>
+                  </Group>
                 )}
               </Group>
 
-              <FileButton onChange={handleFileChange} accept={acceptedImageTypes.join(',')}>
+              <ImageCropModal file={cropSource} onCancel={() => setCropSource(null)} onConfirm={handleCropConfirm} />
+
+              <FileButton
+                onChange={handleFileChange}
+                accept={acceptedImageTypes.join(',')}
+                resetRef={fileResetRef}
+              >
                 {(props) => (
                   <UnstyledButton
                     {...props}
@@ -237,7 +268,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                         aria-pressed={isActive}
                         bdrs="sm"
                         style={{
-                          outline: isActive ? '2px solid var(--mantine-color-brand-8)' : 'none',
+                          outline: isActive ? '1px solid var(--mantine-color-brand-8)' : 'none',
                           outlineOffset: 2,
                         }}
                       >
@@ -251,12 +282,12 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
             </Card>
           </Grid.Col>
 
-          {/* Recommendation Filters */}
+          {/* Preference */}
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Card h="100%" padding="md" radius="md" bg="brand.0" bd="1px solid brand.4" shadow="sm">
               <Group justify="space-between" mb="md">
                 <Text fz="sm" fw={600} c="brand.8">
-                  2. Recommendation Filters
+                  2. Preference
                 </Text>
                 <UnstyledButton onClick={() => setFilters(initialFilters)}>
                   <Text fz="xs" c="brand.7" td="underline">
@@ -311,7 +342,14 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                     color="brand.8"
                     label="Make Priority"
                     checked={filters.pricePriority}
-                    onChange={(event) => updateFilter('pricePriority', event.currentTarget.checked)}
+                    onChange={(event) => {
+                      const checked = event.currentTarget.checked;
+                      setFilters((prev) => ({
+                        ...prev,
+                        pricePriority: checked,
+                        materialPriority: checked ? false : prev.materialPriority,
+                      }));
+                    }}
                   />
                 </Stack>
 
@@ -324,25 +362,32 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                       Specify the material you prefer
                     </Text>
                   </Box>
-                  <Select
+                  <MultiSelect
                     size="xs"
                     radius="xl"
-                    placeholder="Choose Materials"
+                    placeholder={filters.materials.length ? undefined : 'Choose Materials'}
                     data={materialOptions}
                     color="brand.8"
                     clearable
-                    value={filters.material}
+                    value={filters.materials}
                     styles={{
                       dropdown: { color: 'var(--mantine-color-text)' },
                     }}
-                    onChange={(value) => updateFilter('material', value)}
+                    onChange={(value) => updateFilter('materials', value)}
                   />
                   <Checkbox
                     size="xs"
                     color="brand.8"
                     label="Make Priority"
                     checked={filters.materialPriority}
-                    onChange={(event) => updateFilter('materialPriority', event.currentTarget.checked)}
+                    onChange={(event) => {
+                      const checked = event.currentTarget.checked;
+                      setFilters((prev) => ({
+                        ...prev,
+                        materialPriority: checked,
+                        pricePriority: checked ? false : prev.pricePriority,
+                      }));
+                    }}
                   />
                 </Stack>
 

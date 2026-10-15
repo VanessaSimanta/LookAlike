@@ -15,7 +15,7 @@ export const SRecommenderRequest = z
             }),
         min_price: z.number().optional(),
         max_price: z.number().optional(),
-        materials: z.string().optional(),
+        materials: z.array(z.string()).optional(),
         priority: z.string().optional(),
     })
     .refine(

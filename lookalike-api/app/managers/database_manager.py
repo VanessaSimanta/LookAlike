@@ -66,6 +66,7 @@ class DatabaseManager:
                             [
                                 "Underwear",
                                 "Lingerie",
+                                "Swimwear",
                                 "Other",
                             ]
                         )

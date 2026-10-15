@@ -8,7 +8,7 @@ export const toRecommenderRequest = (image: File, filters: RecommendationFilters
   image_file: image,
   min_price: filters.minPrice ?? undefined,
   max_price: filters.maxPrice ?? undefined,
-  materials: filters.material ?? undefined,
+  materials: filters.materials.length ? filters.materials : undefined,
   priority: filters.pricePriority
     ? PriorityEnum.PRICE
     : filters.materialPriority
