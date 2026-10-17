@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import select, text
 
-from app.database import SessionLocal
+from app.dependencies.database import SessionLocal
 from app.models import Brand, Category, Product, ProductImage
 
 BRANDS = ["Uniqlo", "H&M", "Marks & Spencer", "Zara"]

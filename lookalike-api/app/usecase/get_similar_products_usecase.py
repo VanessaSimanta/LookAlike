@@ -2,23 +2,27 @@ from typing import Optional
 
 from fastapi import UploadFile
 import numpy as np
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm.attributes import set_committed_value
 from sklearn.metrics.pairwise import cosine_similarity
 
-from app.errors.product_not_found import ProductNotFoundError
-from app.managers.database_manager import DatabaseManager
-from app.schemas.response.get_final_ranking_response import GetFinalRankingResponse
+from app.models.product import Product
+from app.repositories.protocols import (
+    BrandRepositoryProtocol,
+    CategoryRepositoryProtocol,
+    ProductImageRepositoryProtocol,
+    ProductRepositoryProtocol,
+)
 from app.featureExtractor.feature_extractor import FeatureExtractor
 from app.featureExtractor.feature_index import FeatureIndex
 from app.enums.priority_enum import Priority
 
-# Price Scoring 
-PRICE_SCORE_LOWER_HALF_IN_RANGE = 20   
-PRICE_SCORE_UPPER_HALF_IN_RANGE = 30   
-PRICE_SCORE_BELOW_RANGE = 40           
-PRICE_SCORE_ABOVE_RANGE = 50           
+# Price Scoring
+PRICE_SCORE_LOWER_HALF_IN_RANGE = 20
+PRICE_SCORE_UPPER_HALF_IN_RANGE = 30
+PRICE_SCORE_BELOW_RANGE = 40
+PRICE_SCORE_ABOVE_RANGE = 50
 
-# Material Scoring 
+# Material Scoring
 MATERIAL_MATCH = 100
 MATERIAL_NO_MATCH = 0
 
@@ -27,37 +31,97 @@ WEIGHT_SINGLE = 1.0
 WEIGHT_PRIORITY = 0.6
 WEIGHT_NON_PRIORITY = 0.4
 
+# Cosine Similarity
+TOP_K = 10
 
-class Recommender:
+
+class GetSimilarProductsUseCase:
     def __init__(
         self,
-        database_manager: DatabaseManager,
+        product_repository: ProductRepositoryProtocol,
+        brand_repository: BrandRepositoryProtocol,
+        category_repository: CategoryRepositoryProtocol,
+        product_image_repository: ProductImageRepositoryProtocol,
         feature_extractor: FeatureExtractor,
         feature_index: FeatureIndex,
-    ):
-        self.database_manager = database_manager
-        self.feature_extractor = feature_extractor
-        self.feature_index = feature_index
+    ) -> None:
+        self._product_repository = product_repository
+        self._brand_repository = brand_repository
+        self._category_repository = category_repository
+        self._product_image_repository = product_image_repository
+        self._feature_extractor = feature_extractor
+        self._feature_index = feature_index
 
-    def get_final_ranking(
-        self, product_ids: list[int]
-    ) -> list[GetFinalRankingResponse]:
-        return self.database_manager.get_products_by_ids(product_ids)
+    def execute(
+        self,
+        image: UploadFile,
+        min_price: Optional[int] = None,
+        max_price: Optional[int] = None,
+        materials: Optional[list[str]] = None,
+        priority: Optional[Priority] = None,
+    ) -> list[dict]:
+        image_bytes = image.file.read()
+        query_vector = self._feature_extractor.extract(image_bytes)
 
-    def get_product_detail(self, product_id: int) -> GetFinalRankingResponse:
-        try:
-            return self.database_manager.get_product_detail_by_id(product_id)
-        except NoResultFound:
-            raise ProductNotFoundError([product_id])
+        top_k = self._calculate_cosine_similarity(query_vector, k=TOP_K)
 
-    def get_random_sample(self, limit: int):
-        return self.database_manager.get_random_products(limit)
+        product_ids = [product_id for product_id, _ in top_k]
+        products = self._product_repository.get_by_ids(product_ids)
+
+        self._load_brands(products)
+        self._load_categories(products)
+        self._load_images(products)
+
+        product_map = {product.id: product for product in products}
+
+        candidates = [
+            (product_map[pid], score) for pid, score in top_k if pid in product_map
+        ]
+
+        has_price = min_price is not None and max_price is not None
+        has_material = bool(materials)
+
+        if not has_price and not has_material:
+            return [
+                {"product": p, "similarity": s, "saw_score": None}
+                for p, s in candidates
+            ]
+
+        return self._calculate_simple_additive_weighting(
+            candidates, min_price, max_price, materials, priority
+        )
+
+    def _load_brands(self, products: list[Product]) -> None:
+        brand_ids = list({product.brand_id for product in products})
+        brands = self._brand_repository.get_by_ids(brand_ids)
+        brand_map = {brand.id: brand for brand in brands}
+
+        for product in products:
+            set_committed_value(product, "brand", brand_map.get(product.brand_id))
+
+    def _load_categories(self, products: list[Product]) -> None:
+        category_ids = list({product.category_id for product in products})
+        categories = self._category_repository.get_by_ids(category_ids)
+        category_map = {category.id: category for category in categories}
+
+        for product in products:
+            set_committed_value(
+                product, "category", category_map.get(product.category_id)
+            )
+
+    def _load_images(self, products: list[Product]) -> None:
+        product_ids = [product.id for product in products]
+        images = self._product_image_repository.get_by_product_ids(product_ids)
+        image_map = {image.product_id: image for image in images}
+
+        for product in products:
+            set_committed_value(product, "images", image_map.get(product.id))
 
     def _calculate_cosine_similarity(
         self, query_vector: np.ndarray, k: int
     ) -> list[tuple[int, float]]:
         similarities = cosine_similarity(
-            query_vector, self.feature_index.feature_vectors
+            query_vector, self._feature_index.feature_vectors
         )[0]
 
         sorted_idx = np.argsort(similarities)[::-1]
@@ -66,7 +130,7 @@ class Recommender:
         seen = set()
 
         for idx in sorted_idx:
-            product_id = int(self.feature_index.product_ids[idx])
+            product_id = int(self._feature_index.product_ids[idx])
 
             if product_id in seen:
                 continue
@@ -180,37 +244,3 @@ class Recommender:
 
         rows.sort(key=lambda r: (r["saw_score"], r["similarity"]), reverse=True)
         return rows
-
-    def find_similar_products(
-        self,
-        image: UploadFile,
-        min_price: Optional[int] = None,
-        max_price: Optional[int] = None,
-        materials: Optional[list[str]] = None,
-        priority: Optional[Priority] = None,
-    ):
-        image_bytes = image.file.read()
-        query_vector = self.feature_extractor.extract(image_bytes)
-
-        top_10 = self._calculate_cosine_similarity(query_vector, k=10)
-
-        product_ids = [product_id for product_id, _ in top_10]
-        products = self.database_manager.get_products_by_ids(product_ids)
-        product_map = {product.id: product for product in products}
-
-        candidates = [
-            (product_map[pid], score) for pid, score in top_10 if pid in product_map
-        ]
-
-        has_price = min_price is not None and max_price is not None
-        has_material = bool(materials)
-
-        if not has_price and not has_material:
-            return [
-                {"product": p, "similarity": s, "saw_score": None}
-                for p, s in candidates
-            ]
-
-        return self._calculate_simple_additive_weighting(
-            candidates, min_price, max_price, materials, priority
-        )

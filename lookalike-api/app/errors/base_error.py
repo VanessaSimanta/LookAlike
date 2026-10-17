@@ -4,7 +4,7 @@ from fastapi import status
 
 
 class BaseAppError(Exception):
-    status_code: int = status.HTTP_400_BAD_REQUEST
+    status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
 
     def __init__(self, message: str, detail: Any = None):
         self.message = message
