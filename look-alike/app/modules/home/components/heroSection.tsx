@@ -15,6 +15,7 @@ import {
   Title,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { HeroCarousel } from './heroCarousel';
 
 const navLinks = [
   { label: 'Home', href: '#' },
@@ -201,12 +202,7 @@ export function HeroSection() {
               </SimpleGrid>
             </Stack>
 
-            <Box
-              bg="brand.6"
-              w="100%"
-              h={{ base: 300, sm: 420, md: 'auto' }}
-              style={{ aspectRatio: '1 / 1', borderRadius: 28 }}
-            />
+            <HeroCarousel />
           </SimpleGrid>
         </Container>
       </Box>

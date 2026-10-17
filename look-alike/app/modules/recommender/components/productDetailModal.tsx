@@ -30,10 +30,29 @@ type ProductDetailModalProps = {
 const joinList = (items?: string[] | null) =>
   items && items.length > 0 ? items.join(', ') : '-';
 
+const BRAND_STORE_URLS: Record<string, string> = {
+  uniqlo: 'https://www.uniqlo.com/id/en/',
+  'h&m': 'https://www.zalora.co.id/store/h-m-official-id',
+  zara: 'https://www.zara.com/id/',
+  'marks & spencer': 'https://www.marksandspencer.com/id/',
+  'm&s': 'https://www.marksandspencer.com/id/',
+};
+
+const getBrandStoreUrl = (brand?: string | null) =>
+  brand ? BRAND_STORE_URLS[brand.trim().toLowerCase()] : undefined;
+
 export function ProductDetailModal({ product, opened, onClose }: ProductDetailModalProps) {
   const productId = Number(product?.product_id);
   const { data, isLoading } = useGetProductDetail(opened ? productId : null);
   const isMobile = useMediaQuery('(max-width: 36em)');
+
+  const brandName = data?.brand_name ?? product?.brand;
+  const basePrice = data?.base_price ?? product?.price ?? 0;
+  const promoPrice = data?.promo_price;
+  const isZara = brandName?.trim().toLowerCase() === 'zara';
+  const hasPromo = !isZara && promoPrice != null && promoPrice < basePrice;
+  const rating = data?.rating ?? product?.rating;
+  const storeUrl = getBrandStoreUrl(brandName) ?? product?.url ?? '#';
 
   return (
     <Modal
@@ -74,14 +93,25 @@ export function ProductDetailModal({ product, opened, onClose }: ProductDetailMo
                 <Text fz="md" fw={500} c="brand.8">
                   {product.name}
                 </Text>
-                <Text fz="sm" fw={700} c="brand.8">
-                  {formatRupiah(product.price)}
-                </Text>
-                {product.rating !== undefined && (
+                {hasPromo ? (
+                  <Group gap="xs" align="baseline">
+                    <Text fz="sm" fw={700} c="red.7">
+                      {formatRupiah(promoPrice)}
+                    </Text>
+                    <Text fz="xs" c="brand.3" td="line-through">
+                      {formatRupiah(basePrice)}
+                    </Text>
+                  </Group>
+                ) : (
+                  <Text fz="sm" fw={700} c="brand.8">
+                    {formatRupiah(basePrice)}
+                  </Text>
+                )}
+                {rating != null && (
                   <Group gap="xs">
-                    <Rating value={product.rating} size="xs" readOnly />
+                    <Rating value={rating} fractions={10} size="xs" readOnly />
                     <Text fz="xs" c="brand.3">
-                      {product.rating.toFixed(1)}
+                      {rating.toFixed(1)}
                       {product.reviewCount !== undefined && ` (${product.reviewCount})`}
                     </Text>
                   </Group>
@@ -100,11 +130,11 @@ export function ProductDetailModal({ product, opened, onClose }: ProductDetailMo
                         { label: 'Sizes', value: joinList(data.sizes) },
                         { label: 'Colors', value: joinList(data.colors) },
                       ].map((detail) => (
-                        <Group key={detail.label} gap="md" wrap="nowrap">
-                          <Text fz="xs" fw={600} c="brand.8" w="35%">
+                        <Group key={detail.label} gap="md" wrap="nowrap" align="flex-start">
+                          <Text fz="xs" fw={600} c="brand.8" w="35%" style={{ flexShrink: 0 }}>
                             {detail.label}
                           </Text>
-                          <Text fz="xs" c="brand.7">
+                          <Text fz="xs" c="brand.7" style={{ flex: 1, minWidth: 0, wordBreak: 'break-word' }}>
                             {detail.value}
                           </Text>
                         </Group>
@@ -115,7 +145,7 @@ export function ProductDetailModal({ product, opened, onClose }: ProductDetailMo
 
                 <Button
                   component="a"
-                  href={product.url ?? '#'}
+                  href={storeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   fullWidth
