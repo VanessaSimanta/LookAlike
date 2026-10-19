@@ -1,0 +1,44 @@
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'intro'
+    'carousel'
+    'actions';
+  row-gap: 32px;
+}
+
+.intro {
+  grid-area: intro;
+}
+
+.carousel {
+  grid-area: carousel;
+}
+
+.actions {
+  grid-area: actions;
+}
+
+@media (min-width: 62em) {
+  .heroGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'intro carousel'
+      'actions carousel';
+    column-gap: 60px;
+    row-gap: 0;
+  }
+
+  .intro {
+    align-self: end;
+  }
+
+  .actions {
+    align-self: start;
+  }
+
+  .carousel {
+    align-self: center;
+  }
+}

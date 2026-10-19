@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Carousel } from '@mantine/carousel';
-import { Box, Image, Text } from '@mantine/core';
+import { Box, Image, Stack, Text } from '@mantine/core';
 import Autoplay from 'embla-carousel-autoplay';
 
 const slides = [
@@ -53,12 +53,14 @@ export function HeroCarousel() {
       >
         {slides.map((slide) => (
           <Carousel.Slide key={slide.src}>
-            <Box h={{ base: 260, sm: 380, md: 440 }}>
-              <Text fz="lg" c="brand.7" fw={700} ta="center">
-                {slides[active].caption}
+            <Stack gap="xs" h={{ base: 260, sm: 380, md: 440 }}>
+              <Text fz={{ base: 'md', sm: 'lg' }} c="brand.7" fw={700} ta="center">
+                {slide.caption}
               </Text>
-              <Image src={slide.src} alt={slide.caption} w="100%" h="100%" fit="contain" />
-            </Box>
+              <Box flex={1} mih={0}>
+                <Image src={slide.src} alt={slide.caption} w="100%" h="100%" fit="contain" />
+              </Box>
+            </Stack>
           </Carousel.Slide>
         ))}
       </Carousel>

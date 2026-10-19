@@ -10,6 +10,7 @@ import {
   Checkbox,
   Container,
   FileButton,
+  Flex,
   Grid,
   Group,
   Image,
@@ -44,7 +45,7 @@ type UploadImageSectionProps = {
 const acceptedImageTypes = ['image/png', 'image/jpeg', 'image/webp'];
 
 const SAMPLE_LIMIT = 4;
-const DROPZONE_HEIGHT = 260;
+const DROPZONE_HEIGHT = { base: 200, sm: 260 };
 
 const initialFilters: RecommendationFilters = {
   minPrice: null,
@@ -141,10 +142,10 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
   };
 
   return (
-    <Box id="recommender" bg="brand.1" py="xl">
-      <Container size="md" py="xl">
-        <Stack gap="xs" align="center" mb="xl">
-          <Title order={2} fw={400} c="brand.8" ta="center">
+    <Box id="recommender" bg="brand.1" py={{ base: 'md', sm: 'xl' }}>
+      <Container size="md" py={{ base: 'md', sm: 'xl' }}>
+        <Stack gap="xs" align="center" mb={{ base: 'lg', sm: 'xl' }}>
+          <Title order={2} fw={400} c="brand.8" ta="center" fz={{ base: 24, sm: 34 }}>
             Upload Your Outfits
           </Title>
           <Text fz="sm" c="brand.7" ta="center">
@@ -156,7 +157,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
           {/* Outfit Image Input */}
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Card h="100%" padding="md" radius="md" bg="brand.0" bd="1px solid brand.4" shadow="sm">
-              <Group justify="space-between" mb="sm">
+              <Group justify="space-between" mb="sm" gap="xs">
                 <Text fz="sm" fw={600} c="brand.8">
                   1. Outfit Image Input
                 </Text>
@@ -306,7 +307,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                       Set your preferred price range
                     </Text>
                   </Box>
-                  <Group gap="xs" wrap="nowrap">
+                  <Flex gap="xs" direction={{ base: 'column', xs: 'row' }} align={{ base: 'stretch', xs: 'center' }}>
                     <NumberInput
                       flex={1}
                       size="xs"
@@ -320,7 +321,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                       value={filters.minPrice ?? ''}
                       onChange={(value) => updateFilter('minPrice', typeof value === 'number' ? value : null)}
                     />
-                    <Text fz="sm" c="brand.3">
+                    <Text fz="sm" c="brand.3" visibleFrom="xs">
                       –
                     </Text>
                     <NumberInput
@@ -336,7 +337,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                       value={filters.maxPrice ?? ''}
                       onChange={(value) => updateFilter('maxPrice', typeof value === 'number' ? value : null)}
                     />
-                  </Group>
+                  </Flex>
                   <Checkbox
                     size="xs"
                     color="brand.8"

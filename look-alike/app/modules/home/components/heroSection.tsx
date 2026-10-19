@@ -16,6 +16,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { HeroCarousel } from './heroCarousel';
+import classes from './heroSection.module.css';
 
 const navLinks = [
   { label: 'Home', href: '#' },
@@ -146,8 +147,8 @@ export function HeroSection() {
         }}
       >
         <Container size="xl">
-          <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 40, md: 60 }} verticalSpacing={{ base: 40, md: 60 }}>
-            <Stack gap={0}>
+          <Box className={classes.heroGrid}>
+            <Stack gap={0} className={classes.intro}>
               <Title order={1} fz={{ base: 32, sm: 40, md: 46 }} fw={500} c="brand.8">
                 Upload Any Outfit
               </Title>
@@ -159,8 +160,14 @@ export function HeroSection() {
                 A fashion recommendation system for Uniqlo, H&amp;M, Marks&amp;Spencer, and Zara in
                 Indonesia.
               </Text>
+            </Stack>
 
-              <Group gap={12} mt="xl">
+            <Box className={classes.carousel}>
+              <HeroCarousel />
+            </Box>
+
+            <Stack gap={0} className={classes.actions}>
+              <Group gap={12} mt={{ base: 0, md: 'xl' }}>
                 <Button component="a" href="#recommender" size="md" radius="xl" color="brand.8">
                   Upload Image
                 </Button>
@@ -201,9 +208,7 @@ export function HeroSection() {
                 ))}
               </SimpleGrid>
             </Stack>
-
-            <HeroCarousel />
-          </SimpleGrid>
+          </Box>
         </Container>
       </Box>
     </Box>
