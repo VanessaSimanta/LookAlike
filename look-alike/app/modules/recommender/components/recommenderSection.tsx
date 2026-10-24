@@ -9,7 +9,7 @@ import { ResultsSection } from './resultsSection';
 import { type RecommendationFilters, UploadImageSection } from './uploadImageSection';
 
 export function RecommenderSection() {
-  const { execute, data, isLoading } = useGetRecommender();
+  const { execute, data, isLoading, reset } = useGetRecommender();
 
   const handleSubmit = useCallback(
     async (image: File | string | null, filters: RecommendationFilters) => {
@@ -34,7 +34,7 @@ export function RecommenderSection() {
 
   return (
     <>
-      <UploadImageSection onSubmit={handleSubmit} isLoading={isLoading} />
+      <UploadImageSection onSubmit={handleSubmit} onResetImage={reset} isLoading={isLoading} />
       {!isLoading && data?.data && <ResultsSection products={data.data.map(toProduct)} />}
     </>
   );

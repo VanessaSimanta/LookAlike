@@ -107,7 +107,7 @@ export function ImageCropModal({ file, onCancel, onConfirm }: ImageCropModalProp
       </Center>
 
       <Group justify="space-between" mt="md">
-        <Button variant="subtle" color="brand.7" size="xs" onClick={onCancel}>
+        <Button color="brand.9" size="xs" onClick={onCancel}>
           Cancel
         </Button>
         <Group gap="xs">

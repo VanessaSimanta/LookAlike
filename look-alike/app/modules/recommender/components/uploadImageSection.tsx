@@ -40,6 +40,7 @@ export type RecommendationFilters = {
 
 type UploadImageSectionProps = {
   onSubmit?: (image: File | string | null, filters: RecommendationFilters) => void;
+  onResetImage?: () => void;
   isLoading?: boolean;
 };
 
@@ -56,7 +57,7 @@ const initialFilters: RecommendationFilters = {
   materialPriority: false,
 };
 
-export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageSectionProps) {
+export function UploadImageSection({ onSubmit, onResetImage, isLoading = false }: UploadImageSectionProps) {
   const [file, setFile] = useState<File | null>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [cropSource, setCropSource] = useState<File | null>(null);
@@ -126,6 +127,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
     setFile(null);
     setOriginalFile(null);
     setPreview(null);
+    onResetImage?.();
   };
 
   const handleSelectSample = async (imageUrl: string) => {

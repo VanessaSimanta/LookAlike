@@ -7,6 +7,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image, UnidentifiedImageError
 from rembg import new_session
+from scipy import ndimage
 
 from app.errors.invalid_image_error import InvalidImageError
 
@@ -21,6 +22,8 @@ FEATURE_DIM = 1280
 CLOTH_MODEL = "u2net_cloth_seg"
 MASK_THRESHOLD = 128
 MIN_MASK_COVERAGE = 0.05
+MIN_BBOX_FILL = 0.4
+MIN_LARGEST_COMPONENT = 0.8
 BG_COLOR = (255, 255, 255)
 
 
@@ -39,11 +42,21 @@ class FeatureExtractor:
     def _coverage(self, mask: Image.Image) -> float:
         return np.count_nonzero(np.asarray(mask)) / (mask.width * mask.height)
 
+    def _is_fragmented(self, mask: Image.Image, bbox: tuple) -> bool:
+        arr = np.asarray(mask.crop(bbox)) > 0
+        if arr.mean() < MIN_BBOX_FILL:
+            return True
+        labels, _ = ndimage.label(arr)
+        sizes = np.bincount(labels.ravel())[1:]
+        return sizes.max() / arr.sum() < MIN_LARGEST_COMPONENT
+
     def _remove_background(self, img: Image.Image) -> Image.Image:
         mask = self._binary_mask(self.cloth_session.predict(img, cc="attire")[0])
         if self._coverage(mask) < MIN_MASK_COVERAGE:
             return img
         bbox = mask.getbbox()
+        if self._is_fragmented(mask, bbox):
+            return img
         cutout = img.crop(bbox)
         mask = mask.crop(bbox)
 
