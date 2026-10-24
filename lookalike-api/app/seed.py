@@ -17,6 +17,7 @@ CATEGORIES = [
     "Legging", "Dress", "Jumpsuit & Set", "Swimwear", "Underwear", "Lingerie",
     "Top", "Other",
 ]
+CATEGORY_LOOKUP = {c.lower(): c for c in CATEGORIES}
 
 VECTOR_DIM = 1280
 BATCH_SIZE = 500
@@ -66,6 +67,8 @@ def load_data(csv_path, npy_path):
         missing = df.index[df["image_full_path"].isna()].tolist()
         raise SystemExit(f"Ada baris tanpa image_full_path (gambar tidak ditemukan): {missing[:10]}")
 
+    df["category"] = df["category"].str.strip().str.lower().map(CATEGORY_LOOKUP).fillna(df["category"])
+
     unknown_brand = set(df["brand"]) - set(BRANDS)
     unknown_cat = set(df["category"]) - set(CATEGORIES)
     if unknown_brand or unknown_cat:
@@ -104,12 +107,10 @@ def seed(csv_path, npy_path):
                 material=row.materials.strip(),
                 description=to_text(row.description),
             )
-            product.images.append(
-                ProductImage(
-                    local_path=os.path.basename(row.image_local_path),
-                    url=row.image_url,
-                    feature_vector=vectors[i],  
-                )
+            product.images = ProductImage(
+                local_path=os.path.basename(row.image_local_path),
+                url=row.image_url,
+                feature_vector=vectors[i],
             )
             session.add(product)
             existing_codes.add(row.product_id)
