@@ -27,6 +27,7 @@ import {
 import { IconPhoto, IconUpload } from '@tabler/icons-react';
 import { useGetRandomSample } from '../hooks/use-get-random-sample';
 import { materialOptions } from '../../enums/materialEnum';
+import { SImageFile, SPriceRange } from '../data/request';
 import { ImageCropModal } from './imageCropModal';
 
 export type RecommendationFilters = {
@@ -64,6 +65,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
   const [filters, setFilters] = useState<RecommendationFilters>(initialFilters);
   const [isDragging, setIsDragging] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
+  const [priceErrors, setPriceErrors] = useState<{ minPrice?: string; maxPrice?: string }>({});
   const { data: samples, isLoading: isSampleLoading } = useGetRandomSample(SAMPLE_LIMIT);
 
   useEffect(() => {
@@ -75,6 +77,13 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
   const handleFileChange = (selected: File | null) => {
     fileResetRef.current?.();
     if (!selected) return;
+
+    const result = SImageFile.safeParse(selected);
+    if (!result.success) {
+      setDropError(result.error.issues[0].message);
+      return;
+    }
+
     setDropError(null);
     setCropSource(selected);
   };
@@ -139,6 +148,23 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
 
   const updateFilter = <K extends keyof RecommendationFilters>(key: K, value: RecommendationFilters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+    if (key === 'minPrice' || key === 'maxPrice') setPriceErrors({});
+  };
+
+  const handleSubmit = () => {
+    const result = SPriceRange.safeParse({ minPrice: filters.minPrice, maxPrice: filters.maxPrice });
+    if (!result.success) {
+      const errors: { minPrice?: string; maxPrice?: string } = {};
+      for (const issue of result.error.issues) {
+        errors[issue.path[0] as 'minPrice' | 'maxPrice'] = issue.message;
+      }
+      setPriceErrors(errors);
+      return;
+    }
+
+    const validFilters = { ...filters, ...result.data };
+    setFilters(validFilters);
+    onSubmit?.(file ?? preview, validFilters);
   };
 
   return (
@@ -290,7 +316,12 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                 <Text fz="sm" fw={600} c="brand.8">
                   2. Preference
                 </Text>
-                <UnstyledButton onClick={() => setFilters(initialFilters)}>
+                <UnstyledButton
+                  onClick={() => {
+                    setFilters(initialFilters);
+                    setPriceErrors({});
+                  }}
+                >
                   <Text fz="xs" c="brand.7" td="underline">
                     Reset
                   </Text>
@@ -319,6 +350,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                       min={0}
                       hideControls
                       value={filters.minPrice ?? ''}
+                      error={!!priceErrors.minPrice}
                       onChange={(value) => updateFilter('minPrice', typeof value === 'number' ? value : null)}
                     />
                     <Text fz="sm" c="brand.3" visibleFrom="xs">
@@ -335,9 +367,15 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                       min={0}
                       hideControls
                       value={filters.maxPrice ?? ''}
+                      error={!!priceErrors.maxPrice}
                       onChange={(value) => updateFilter('maxPrice', typeof value === 'number' ? value : null)}
                     />
                   </Flex>
+                  {(priceErrors.minPrice || priceErrors.maxPrice) && (
+                    <Text fz="xs" c="red.7">
+                      {priceErrors.minPrice ?? priceErrors.maxPrice}
+                    </Text>
+                  )}
                   <Checkbox
                     size="xs"
                     color="brand.8"
@@ -399,7 +437,7 @@ export function UploadImageSection({ onSubmit, isLoading = false }: UploadImageS
                   color="brand.8"
                   disabled={!preview}
                   loading={isLoading}
-                  onClick={() => onSubmit?.(file ?? preview, filters)}
+                  onClick={handleSubmit}
                 >
                   Get Your Recommendation
                 </Button>

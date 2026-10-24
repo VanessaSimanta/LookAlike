@@ -36,7 +36,7 @@ export function HeroSection() {
   const [menuOpened, { toggle: toggleMenu, close: closeMenu }] = useDisclosure(false);
 
   return (
-    <Box bg="brand.1" mih="100vh">
+    <>
       <Box bg="brand.8" py={8} px="md">
         <Text fz="xs" ta="center" c="brand.4">
           Multi-Brand Fashion Recommendation System:{' '}
@@ -53,7 +53,13 @@ export function HeroSection() {
         </Text>
       </Box>
 
-      <Box component="header" bg="brand.1" style={{ borderBottom: '1px solid var(--mantine-color-brand-4)' }}>
+      <Box
+        component="header"
+        bg="brand.1"
+        pos="sticky"
+        top={0}
+        style={{ zIndex: 100, borderBottom: '1px solid var(--mantine-color-brand-4)' }}
+      >
         <Container size="xl" py={{ base: 12, sm: 18 }}>
           <Group justify="space-between" wrap="nowrap">
             <Group gap={10} wrap="nowrap">
@@ -142,6 +148,7 @@ export function HeroSection() {
       <Box
         py={{ base: 48, sm: 64, md: 90 }}
         style={{
+          backgroundColor: 'var(--mantine-color-brand-1)',
           backgroundImage: 'radial-gradient(var(--mantine-color-brand-4) 1.2px, transparent 1.2px)',
           backgroundSize: '22px 22px',
         }}
@@ -211,6 +218,6 @@ export function HeroSection() {
           </Box>
         </Container>
       </Box>
-    </Box>
+    </>
   );
 }
