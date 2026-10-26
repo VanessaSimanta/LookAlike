@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { ApplicationError } from '@/app/error/error';
 import { useGetRecommender } from '../hooks/use-get-recommender';
@@ -10,6 +10,7 @@ import { type RecommendationFilters, UploadImageSection } from './uploadImageSec
 
 export function RecommenderSection() {
   const { execute, data, isLoading, reset } = useGetRecommender();
+  const [duration, setDuration] = useState<number | null>(null);
 
   const handleSubmit = useCallback(
     async (image: File | string | null, filters: RecommendationFilters) => {
@@ -17,8 +18,10 @@ export function RecommenderSection() {
         return;
       }
 
+      const startedAt = performance.now();
       try {
         await execute(toRecommenderRequest(image, filters));
+        setDuration((performance.now() - startedAt) / 1000);
       } catch (error) {
         if (error instanceof ApplicationError) {
           notifications.show({
@@ -35,7 +38,9 @@ export function RecommenderSection() {
   return (
     <>
       <UploadImageSection onSubmit={handleSubmit} onResetImage={reset} isLoading={isLoading} />
-      {!isLoading && data?.data && <ResultsSection products={data.data.map(toProduct)} />}
+      {(isLoading || data?.data) && (
+        <ResultsSection products={data?.data.map(toProduct)} duration={duration} isLoading={isLoading} />
+      )}
     </>
   );
 }

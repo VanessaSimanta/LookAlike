@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActionIcon,
   AspectRatio,
@@ -11,6 +11,7 @@ import {
   Group,
   Image,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
   Title,
@@ -35,25 +36,34 @@ export type Product = {
 
 type ResultsSectionProps = {
   products?: Product[];
+  duration?: number | null;
+  isLoading?: boolean;
 };
+
+const RESULT_LIMIT = 10;
 
 
 export const formatRupiah = (value: number) => `Rp. ${value.toLocaleString('id-ID')}`;
 
-export function ResultsSection({ products }: ResultsSectionProps) {
+export function ResultsSection({ products, duration, isLoading = false }: ResultsSectionProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (isLoading) sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [isLoading]);
 
   return (
-    <Box id="results" bg="brand.0" py="xl">
+    <Box id="results" ref={sectionRef} bg="brand.0" py="xl" aria-busy={isLoading}>
       <Container size="md" py="xl">
         <Group justify="space-between" align="flex-end" mb="lg" gap="sm">
           <Stack gap={0}>
             <Title order={2} fw={400} c="brand.8">
-              Top 10 Recommendation Results
+              {isLoading ? 'Finding Your Top 10 Matches...' : 'Top 10 Recommendation Results'}
             </Title>
             <Text fz="xs" c="brand.7">
               Ranked by visual similarity score and selected filters
+              {!isLoading && duration != null && ` · Found in ${duration.toFixed(1)}s`}
             </Text>
           </Stack>
           <Group gap="xs">
@@ -67,9 +77,11 @@ export function ResultsSection({ products }: ResultsSectionProps) {
         </Group>
 
         <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing="sm" verticalSpacing="md">
-          {products?.map((product) => (
-            <ProductCard key={product.product_id} product={product} onClick={() => setSelectedProduct(product)} />
-          ))}
+          {isLoading
+            ? Array.from({ length: RESULT_LIMIT }).map((_, index) => <ProductCardSkeleton key={index} />)
+            : products?.map((product) => (
+              <ProductCard key={product.product_id} product={product} onClick={() => setSelectedProduct(product)} />
+            ))}
         </SimpleGrid>
       </Container>
 
@@ -79,6 +91,25 @@ export function ResultsSection({ products }: ResultsSectionProps) {
         onClose={() => setSelectedProduct(null)}
       />
     </Box>
+  );
+}
+
+function ProductCardSkeleton() {
+  return (
+    <Card padding="xs" radius="md" bg="brand.1" bd="1px solid brand.4" shadow="sm">
+      <Card.Section>
+        <AspectRatio ratio={4 / 5}>
+          <Skeleton radius={0} />
+        </AspectRatio>
+      </Card.Section>
+
+      <Stack gap="xs" mt="sm">
+        <Skeleton h={8} w="40%" />
+        <Skeleton h={10} />
+        <Skeleton h={10} w="70%" />
+        <Skeleton h={12} w="50%" mt={4} />
+      </Stack>
+    </Card>
   );
 }
 

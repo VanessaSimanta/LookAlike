@@ -7,9 +7,9 @@ const steps = [
   {
     step: 'Step 01',
     icon: LuUpload,
-    title: 'Upload Clothing Photo',
+    title: 'Upload & Crop Photo',
     description:
-      'Upload a clear photo of your clothing item. For better accuracy, make sure the background is clean and the clothing is clearly visible.',
+      'Upload a clear photo of your clothing item, then crop it to focus on the clothing for more accurate results.',
   },
   {
     step: 'Step 02',

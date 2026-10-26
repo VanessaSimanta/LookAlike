@@ -14,6 +14,7 @@ import {
   Grid,
   Group,
   Image,
+  Loader,
   MultiSelect,
   NumberInput,
   SimpleGrid,
@@ -68,6 +69,17 @@ export function UploadImageSection({ onSubmit, onResetImage, isLoading = false }
   const [dropError, setDropError] = useState<string | null>(null);
   const [priceErrors, setPriceErrors] = useState<{ minPrice?: string; maxPrice?: string }>({});
   const { data: samples, isLoading: isSampleLoading } = useGetRandomSample(SAMPLE_LIMIT);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!isLoading) return;
+    const startedAt = performance.now();
+    const interval = setInterval(() => setElapsed((performance.now() - startedAt) / 1000), 100);
+    return () => {
+      clearInterval(interval);
+      setElapsed(0);
+    };
+  }, [isLoading]);
 
   useEffect(() => {
     return () => {
@@ -154,6 +166,8 @@ export function UploadImageSection({ onSubmit, onResetImage, isLoading = false }
   };
 
   const handleSubmit = () => {
+    if (isLoading) return;
+
     const result = SPriceRange.safeParse({ minPrice: filters.minPrice, maxPrice: filters.maxPrice });
     if (!result.success) {
       const errors: { minPrice?: string; maxPrice?: string } = {};
@@ -185,7 +199,7 @@ export function UploadImageSection({ onSubmit, onResetImage, isLoading = false }
           {/* Outfit Image Input */}
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Card h="100%" padding="md" radius="md" bg="brand.0" bd="1px solid brand.4" shadow="sm">
-              <Group justify="space-between" mb="sm" gap="xs">
+              <Group justify="space-between" gap="xs" mb="md">
                 <Text fz="sm" fw={600} c="brand.8">
                   1. Outfit Image Input
                 </Text>
@@ -438,10 +452,11 @@ export function UploadImageSection({ onSubmit, onResetImage, isLoading = false }
                   radius="md"
                   color="brand.8"
                   disabled={!preview}
-                  loading={isLoading}
+                  aria-busy={isLoading}
+                  leftSection={isLoading ? <Loader size={14} color="brand.0" /> : undefined}
                   onClick={handleSubmit}
                 >
-                  Get Your Recommendation
+                  {isLoading ? `Finding your matches... ${elapsed.toFixed(1)}s` : 'Get Your Recommendation'}
                 </Button>
                 {!preview && (
                   <Center>

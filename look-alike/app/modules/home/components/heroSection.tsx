@@ -156,11 +156,18 @@ export function HeroSection() {
         <Container size="xl">
           <Box className={classes.heroGrid}>
             <Stack gap={0} className={classes.intro}>
-              <Title order={1} fz={{ base: 32, sm: 40, md: 46 }} fw={500} c="brand.8">
-                Upload Any Outfit
+              <Title
+                order={1}
+                fz={{ base: 48, sm: 60, md: 75 }}
+                fw={600}
+                c="brand.8"
+                lh={1}
+                style={{ letterSpacing: '-0.02em' }}
+              >
+                LookAlike
               </Title>
-              <Title order={2} fz={{ base: 32, sm: 40, md: 46 }} fw={400} fs="italic" c="brand.7">
-                To Find the Best Match
+              <Title order={2} mt="sm" fz={{ base: 22, sm: 26, md: 30 }} fw={400} fs="italic" c="brand.7">
+                Upload any outfit to find the best match
               </Title>
 
               <Text mt="lg" maw={440} c="brand.7" fz={{ base: 'md', sm: 'lg' }}>
