@@ -158,7 +158,7 @@ export function HeroSection() {
             <Stack gap={0} className={classes.intro}>
               <Title
                 order={1}
-                fz={{ base: 48, sm: 60, md: 75 }}
+                fz={{ base: 48, sm: 60, md: 80 }}
                 fw={600}
                 c="brand.8"
                 lh={1}
