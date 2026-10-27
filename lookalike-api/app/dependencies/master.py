@@ -13,6 +13,7 @@ from app.repositories.product_repository import ProductRepository
 from app.usecase.get_final_ranking_usecase import GetFinalRankingUseCase
 from app.usecase.get_product_detail_usecase import GetProductDetailUseCase
 from app.usecase.get_random_sample_usecase import GetRandomSampleUseCase
+from app.usecase.get_sample_image_usecase import GetSampleImageUseCase
 from app.usecase.get_similar_products_usecase import GetSimilarProductsUseCase
 
 
@@ -59,6 +60,14 @@ def get_random_sample_use_case(
     return GetRandomSampleUseCase(
         product_repository=ProductRepository(db),
         category_repository=CategoryRepository(db),
+        product_image_repository=ProductImageRepository(db),
+    )
+
+
+def get_sample_image_use_case(
+    db: Session = Depends(get_db),
+) -> GetSampleImageUseCase:
+    return GetSampleImageUseCase(
         product_image_repository=ProductImageRepository(db),
     )
 

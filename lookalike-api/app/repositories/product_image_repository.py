@@ -29,6 +29,15 @@ class ProductImageRepository:
             print("Error in get_by_product_ids product image repository:", e)
             raise e
 
+    def exists_by_url(self, url: str) -> bool:
+        try:
+            query = select(ProductImage.id).where(ProductImage.url == url).limit(1)
+
+            return self.db.scalars(query).first() is not None
+        except Exception as e:
+            print("Error in exists_by_url product image repository:", e)
+            raise e
+
     def get_all_feature_vectors(self) -> list[ProductImage]:
         try:
             query = (

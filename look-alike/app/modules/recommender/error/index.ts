@@ -27,3 +27,12 @@ export class GetRandomSampleError extends ApplicationError {
     );
   }
 }
+
+export class GetSampleImageError extends ApplicationError {
+  constructor() {
+    super(
+      'Error',
+      'Gagal memuat gambar sample, silahkan coba gambar lainnya'
+    );
+  }
+}

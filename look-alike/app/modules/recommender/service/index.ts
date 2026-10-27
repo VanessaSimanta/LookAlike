@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import { BACKEND_URL } from '@/shared/api';
 import { TRecommenderRequest } from '../data/request';
 import { TProductDetailResponse, TRandomSampleResponse, TRecommenderResponse } from '../data/response';
-import { GetProductDetailError, GetRandomSampleError, GetRecommendationError } from '../error';
+import { GetProductDetailError, GetRandomSampleError, GetRecommendationError, GetSampleImageError } from '../error';
 
 export const RecommenderService = {
     getRecommender: async(body: TRecommenderRequest) => {
@@ -50,6 +50,20 @@ export const RecommenderService = {
             if (axios.isAxiosError(error)) {
                 console.log("error in getRandomSample: ", error);
                 throw new GetRandomSampleError();
+            }
+            throw error;
+        }
+    },
+    getSampleImage: async(url: string) => {
+        try {
+            const response: AxiosResponse<Blob> =
+                await BACKEND_URL.get('/sample-image', { params: { url }, responseType: 'blob' });
+
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log("error in getSampleImage: ", error);
+                throw new GetSampleImageError();
             }
             throw error;
         }

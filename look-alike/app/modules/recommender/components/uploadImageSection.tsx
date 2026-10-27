@@ -29,6 +29,7 @@ import { IconPhoto, IconUpload } from '@tabler/icons-react';
 import { useGetRandomSample } from '../hooks/use-get-random-sample';
 import { materialOptions } from '../../enums/materialEnum';
 import { SImageFile, SPriceRange } from '../data/request';
+import { RecommenderService } from '../service';
 import { ImageCropModal } from './imageCropModal';
 
 export type RecommendationFilters = {
@@ -149,8 +150,7 @@ export function UploadImageSection({ onSubmit, onResetImage, isLoading = false }
     setPreview(imageUrl);
 
     try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
+      const blob = await RecommenderService.getSampleImage(imageUrl);
       const fileName = imageUrl.split('/').pop()?.split('?')[0] || 'sample.jpg';
       const sampleFile = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
       setFile(sampleFile);
