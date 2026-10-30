@@ -94,7 +94,7 @@ class FeatureExtractor:
         img_array = img_to_array(img)
         img_array = preprocess_input(img_array)
         img_array = np.expand_dims(img_array, axis=0)
-        query_vector = self.model.predict(img_array, verbose=0)
+        query_vector = self.model(img_array, training=False).numpy()
 
         if query_vector.shape != (1, FEATURE_DIM):
             raise ValueError(f"Shape fitur {query_vector.shape}, seharusnya (1, {FEATURE_DIM})")
