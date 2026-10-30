@@ -22,7 +22,6 @@ def get_final_ranking(
 ):
     products = use_case.execute(query.product_ids)
 
-    print("products", products)
     return (
         StandardResponseBuilder()
         .set_data([get_final_ranking_mapper(product) for product in products])
