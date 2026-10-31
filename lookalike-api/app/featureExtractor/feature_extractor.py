@@ -1,9 +1,11 @@
 import io
 import os
+import threading
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
+import onnxruntime as ort
 import tensorflow as tf
 from PIL import Image, UnidentifiedImageError
 from rembg import new_session
@@ -32,9 +34,13 @@ class FeatureExtractor:
         self.model = tf.keras.models.load_model(model_path, compile=False)
         self.remove_background = remove_background
         if remove_background:
-            self.cloth_session = new_session(CLOTH_MODEL)
+            sess_opts = ort.SessionOptions()
+            sess_opts.enable_cpu_mem_arena = False
+            sess_opts.enable_mem_pattern = False
+            self.cloth_session = new_session(CLOTH_MODEL, sess_opts=sess_opts)
         debug_dir = os.getenv("REMBG_DEBUG_DIR")
         self.debug_dir = Path(debug_dir) if debug_dir else None
+        self._lock = threading.Lock()
 
     def _binary_mask(self, mask: Image.Image) -> Image.Image:
         return mask.convert("L").point(lambda v: 255 if v > MASK_THRESHOLD else 0)
@@ -82,6 +88,10 @@ class FeatureExtractor:
         except (UnidentifiedImageError, OSError) as exc:
             raise InvalidImageError() from exc
 
+        with self._lock:
+            return self._extract(img)
+
+    def _extract(self, img: Image.Image) -> np.ndarray:
         original = img
         if self.remove_background:
             img = self._remove_background(img)
