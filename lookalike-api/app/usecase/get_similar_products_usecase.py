@@ -30,6 +30,7 @@ MATERIAL_NO_MATCH = 0
 WEIGHT_SINGLE = 1.0
 WEIGHT_PRIORITY = 0.6
 WEIGHT_NON_PRIORITY = 0.4
+WEIGHT_EQUAL = 0.5
 
 # Cosine Similarity
 TOP_K = 10
@@ -176,7 +177,9 @@ class GetSimilarProductsUseCase:
 
         if priority == Priority.PRICE:
             return {"harga": WEIGHT_PRIORITY, "bahan": WEIGHT_NON_PRIORITY}
-        return {"harga": WEIGHT_NON_PRIORITY, "bahan": WEIGHT_PRIORITY}
+        if priority == Priority.MATERIALS:
+            return {"harga": WEIGHT_NON_PRIORITY, "bahan": WEIGHT_PRIORITY}
+        return {"harga": WEIGHT_EQUAL, "bahan": WEIGHT_EQUAL}
 
     @staticmethod
     def _material_score(

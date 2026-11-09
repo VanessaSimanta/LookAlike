@@ -21,9 +21,9 @@ const steps = [
   {
     step: 'Step 03',
     icon: LuSparkles,
-    title: 'Top 10 Brand Matches',
+    title: 'Top 10 Product Matches',
     description:
-      'Discover the top 10 brands that best match your clothing, ranked by similarity score.',
+      'Discover the top 10 products from our brands that best match your clothing.',
   },
 ];
 
